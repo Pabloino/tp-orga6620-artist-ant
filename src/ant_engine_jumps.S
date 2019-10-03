@@ -6,9 +6,8 @@
 #define WEST 3
 
 .data
-default: .asciiz "Unknown orientation %d"
-default_m: .asciiz "Unknown forward %d"
-myfunc_name: .asciiz "Testing"
+default: .asciiz "Unknown orientation"
+default_m: .asciiz "Unknown forward"
 updated_orientation: .space 4
 
 .text
@@ -21,10 +20,11 @@ new_orientation:
     subu sp, sp, 40                 # Building stack
     sw ra, 32(sp)
     sw fp, 28(sp)
-    sw gp, 24(sp)
-    sw t0, 16(sp)
-    sw a1, 4(sp)
-    sw a0, 0(sp)
+    .cprestore 24   # sw gp, 24(sp)
+    move fp, sp
+    sw t0, 16(fp)
+    sw a1, 4(fp)
+    sw a0, 0(fp)
     beq a0, NORTH, north            # Function body
     beq a0, SOUTH, south
     beq a0, EAST, east
@@ -54,7 +54,6 @@ west:
 call_decide:
     jal decide
     sw v0, updated_orientation
-    li v0, updated_orientation
     lw ra, 32(sp)                   # Disarming stack
     lw fp, 28(sp)
     lw gp, 24(sp)
@@ -72,7 +71,7 @@ call_decide:
 decide:
     subu sp, sp, 8          # Building stack
     sw fp, 4(sp)
-    sw gp, 0(sp)
+    .cprestore 0   # sw gp, 0(sp)
     beq	a0, 1, go_right     # Function body
 go_left:
     move v0, a1
@@ -94,10 +93,11 @@ move_forward:
     subu sp, sp, 32                 # Building stack
     sw ra, 24(sp)
     sw fp, 20(sp)
-    sw gp, 16(sp)
-    sw a2, 8(sp)
-    sw a1, 4(sp)
-    sw a0, 0(sp)
+    .cprestore 16   # sw gp, 16(sp)
+    move fp, sp
+    sw a2, 8(fp)
+    sw a1, 4(fp)
+    sw a0, 0(fp)
     lw t0, 0(a0)    #ant->x       # Function body
     lw t1, 4(a0)    #ant->y
     lw t2, 8(a0)    #ant->o
@@ -108,25 +108,21 @@ move_forward:
     la a0, default_m
     jal doPanic
 move_north:
-    move a0, t1
     addi t1, t1, -1
     move a1, t1
     move a2, a2
     b call_adjust
 move_south:
-    move a0, t1
     addi t1, t1, 1
     move a1, t1
     move a2, a2
     b call_adjust
 move_east:
-    move a0, t0
     addi t0, t0, 1
     move a1, t0
     move a2, a1
     b call_adjust
 move_west:
-    move a0, t0
     addi t0, t0, -1
     move a1, t0
     move a2, a1
