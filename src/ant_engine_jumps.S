@@ -8,7 +8,6 @@
 .data
 default: .asciiz "Unknown orientation"
 default_m: .asciiz "Unknown forward"
-updated_orientation: .space 4
 
 .text
 .align 2
@@ -16,13 +15,11 @@ updated_orientation: .space 4
 .ent new_orientation
 
 new_orientation:
-    li t0, updated_orientation
-    subu sp, sp, 40                 # Building stack
-    sw ra, 32(sp)
-    sw fp, 28(sp)
-    .cprestore 24   # sw gp, 24(sp)
+    subu sp, sp, 32                 # Building stack
+    sw ra, 24(sp)
+    sw fp, 20(sp)
+    .cprestore 16   # sw gp, 16(sp)
     move fp, sp
-    sw t0, 16(fp)
     sw a1, 4(fp)
     sw a0, 0(fp)
     beq a0, NORTH, north            # Function body
@@ -53,13 +50,12 @@ west:
     b call_decide
 call_decide:
     jal decide
-    sw v0, updated_orientation
-    lw ra, 32(sp)                   # Disarming stack
-    lw fp, 28(sp)
-    lw gp, 24(sp)
+    lw ra, 24(sp)                   # Disarming stack
+    lw fp, 20(sp)
+    lw gp, 16(sp)
     lw a1, 4(sp)
     lw a0, 0(sp)
-    addu sp, sp, 40
+    addu sp, sp, 32
     jr ra
 .end new_orientation
 
@@ -108,24 +104,24 @@ move_forward:
     la a0, default_m
     jal doPanic
 move_north:
-    addi t1, t1, -1
-    move a1, t1
-    move a2, a2
+    addu a0, a0, 4      #&ant->y
+    subu t1, t1, 1
+    move a1, t1         #ant->y-1
     b call_adjust
 move_south:
-    addi t1, t1, 1
-    move a1, t1
-    move a2, a2
+    addu a0, a0, 4      #&ant->y
+    addu t1, t1, 1
+    move a1, t1         #ant->y+1
     b call_adjust
 move_east:
-    addi t0, t0, 1
-    move a1, t0
-    move a2, a1
+    move a2, a1         #width
+    addu t0, t0, 1
+    move a1, t0         #ant->x+1
     b call_adjust
 move_west:
-    addi t0, t0, -1
-    move a1, t0
-    move a2, a1
+    move a2, a1         #width
+    subu t0, t0, 1
+    move a1, t0         #ant->x-1
     b call_adjust
 call_adjust:
     jal doAdjust
