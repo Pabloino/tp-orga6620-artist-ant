@@ -15,6 +15,10 @@ default_m: .asciiz "Unknown forward"
 .ent new_orientation
 
 new_orientation:
+    .frame sp, 32, ra
+    .set noreorder
+    .cpload	t9
+    .set reorder	
     subu sp, sp, 32                 # Building stack
     sw ra, 24(sp)
     sw fp, 20(sp)
@@ -86,6 +90,10 @@ exit_decide:
 .globl move_forward
 .ent move_forward
 move_forward:
+    .frame sp, 32, ra
+    .set noreorder
+    .cpload	t9
+    .set reorder	
     subu sp, sp, 32                 # Building stack
     sw ra, 24(sp)
     sw fp, 20(sp)
@@ -124,8 +132,7 @@ move_west:
     move a1, t0         #ant->x-1
     b call_adjust
 call_adjust:
-    jal doAdjust
-    move v0, a0
+    jal adjust
     lw ra, 24(sp)                   # Disarming stack
     lw fp, 20(sp)
     lw gp, 16(sp)
@@ -133,5 +140,24 @@ call_adjust:
     lw a1, 4(sp)
     lw a0, 0(sp)
     addu sp, sp, 32
+    move v0, a0
     jr ra
 .end move_forward
+
+
+.text
+.align 2
+.globl adjust
+.ent adjust
+adjust:
+    subu sp, sp, 8          # Building stack
+    sw fp, 4(sp)
+    .cprestore 0   # sw gp, 0(sp)
+    div a1, a2     # Function body
+    mfhi t0
+    sw t0, (a0)
+    lw gp, 0(sp)            # Disarming stack
+    lw fp, 4(sp)
+    addu sp, sp, 8
+    jr ra
+.end adjust
