@@ -72,7 +72,7 @@ decide:
     subu sp, sp, 8          # Building stack
     sw fp, 4(sp)
     .cprestore 0            # sw gp, 0(sp)
-    beq	a0, 1, go_right     # Function body
+    beq	a0, 1, go_right     # Check if rotation is right
 go_left:
     move v0, a1
     b exit_decide
