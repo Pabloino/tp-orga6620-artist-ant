@@ -22,7 +22,7 @@ new_orientation:
     subu sp, sp, 32                 # Building stack
     sw ra, 24(sp)
     sw fp, 20(sp)
-    .cprestore 16   # sw gp, 16(sp)
+    .cprestore 16                   # sw gp, 16(sp)
     move fp, sp
     sw a1, 4(fp)
     sw a0, 0(fp)
@@ -71,7 +71,7 @@ call_decide:
 decide:
     subu sp, sp, 8          # Building stack
     sw fp, 4(sp)
-    .cprestore 0   # sw gp, 0(sp)
+    .cprestore 0            # sw gp, 0(sp)
     beq	a0, 1, go_right     # Function body
 go_left:
     move v0, a1
@@ -94,17 +94,17 @@ move_forward:
     .set noreorder
     .cpload	t9
     .set reorder	
-    subu sp, sp, 32                 # Building stack
+    subu sp, sp, 32               # Building stack
     sw ra, 24(sp)
     sw fp, 20(sp)
-    .cprestore 16   # sw gp, 16(sp)
+    .cprestore 16                 # sw gp, 16(sp)
     move fp, sp
     sw a2, 8(fp)
     sw a1, 4(fp)
     sw a0, 0(fp)
-    lw t0, 0(a0)    #ant->x       # Function body
-    lw t1, 4(a0)    #ant->y
-    lw t2, 8(a0)    #ant->o
+    lw t0, 0(a0)    # ant->x      # Function body
+    lw t1, 4(a0)    # ant->y
+    lw t2, 8(a0)    # ant->o
     beq t2, NORTH, move_north
     beq t2, SOUTH, move_south
     beq t2, EAST, move_east
@@ -112,28 +112,28 @@ move_forward:
     la a0, default_m
     jal doPanic
 move_north:
-    addu a0, a0, 4      #&ant->y
+    addu a0, a0, 4      # &ant->y
     subu t1, t1, 1
-    move a1, t1         #ant->y-1
+    move a1, t1         # ant->y-1
     b call_adjust
 move_south:
-    addu a0, a0, 4      #&ant->y
+    addu a0, a0, 4      # &ant->y
     addu t1, t1, 1
-    move a1, t1         #ant->y+1
+    move a1, t1         # ant->y+1
     b call_adjust
 move_east:
-    move a2, a1         #width
+    move a2, a1         # width
     addu t0, t0, 1
-    move a1, t0         #ant->x+1
+    move a1, t0         # ant->x+1
     b call_adjust
 move_west:
-    move a2, a1         #width
+    move a2, a1         # width
     subu t0, t0, 1
-    move a1, t0         #ant->x-1
+    move a1, t0         # ant->x-1
     b call_adjust
 call_adjust:
     jal adjust
-    lw ra, 24(sp)                   # Disarming stack
+    lw ra, 24(sp)       # Disarming stack
     lw fp, 20(sp)
     lw gp, 16(sp)
     lw a2, 8(sp)
@@ -152,9 +152,14 @@ call_adjust:
 adjust:
     subu sp, sp, 8          # Building stack
     sw fp, 4(sp)
-    .cprestore 0   # sw gp, 0(sp)
-    div a1, a2     # Function body
+    .cprestore 0            # sw gp, 0(sp)
+    blt a1, 0, step_side    # Check if position is out of limit of the grid
+    div a1, a2
     mfhi t0
+    b exit_adjust
+step_side:
+    subu t0, a2, 1          # Step to [size-1] position
+exit_adjust:
     sw t0, (a0)
     lw gp, 0(sp)            # Disarming stack
     lw fp, 4(sp)
