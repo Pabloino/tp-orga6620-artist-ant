@@ -13,7 +13,6 @@ default_m: .asciiz "Unknown forward"
 .align 2
 .globl new_orientation
 .ent new_orientation
-
 new_orientation:
     .frame sp, 32, ra
     .set noreorder
@@ -67,7 +66,6 @@ call_decide:
 .align 2
 .globl decide
 .ent decide
-
 decide:
     subu sp, sp, 8          # Building stack
     sw fp, 4(sp)
@@ -143,7 +141,6 @@ call_adjust:
     move v0, a0
     jr ra
 .end move_forward
-
 
 .text
 .align 2
