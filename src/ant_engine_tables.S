@@ -80,29 +80,23 @@ move_forward:
 .globl step_north
 .ent step_north
 step_north:
-    .frame sp, 32, ra
-    .set noreorder
-    .cpload	t9
-    .set reorder	
-    subu sp, sp, 32         # Building stack
-    sw ra, 24(sp)
-    sw fp, 20(sp)
-    .cprestore 16           # sw gp, 16(sp)
-    move fp, sp
-    sw a1, 4(fp)
-    sw a0, 0(fp)
+    subu sp, sp, 8          # Building stack
+    sw fp, 4(sp)
+    .cprestore 0            # sw gp, 0(sp)
     lw t0, 4(a0)            # ant->y
-    move a2, a1             # height
-    addu a0, a0, 4          # &ant->y
-    subu t0, t0, 1
-    move a1, t0             # ant->y-1
-    jal adjust
-    lw ra, 24(sp)           # Disarming stack
-    lw fp, 20(sp)
-    lw gp, 16(sp)
-    lw a1, 4(sp)
-    lw a0, 0(sp)
-    addu sp, sp, 32
+    subu t0, t0, 1          # ant->y-1
+    addu t1, a0, 4          # &ant->y
+    blt t0, 0, step_side_n  # Check if position is out of limit of the grid
+    div t0, a1
+    mfhi t0
+    b exit_adjust_n
+step_side_n:
+    subu t0, a1, 1          # Step to [size-1] position
+exit_adjust_n:
+    sw t0, (a0)
+    lw gp, 0(sp)            # Disarming stack
+    lw fp, 4(sp)
+    addu sp, sp, 8
     jr ra
 .end step_north
 
@@ -110,30 +104,24 @@ step_north:
 .align 2
 .globl step_south
 .ent step_south
-step_south:
-    .frame sp, 32, ra
-    .set noreorder
-    .cpload	t9
-    .set reorder	
-    subu sp, sp, 32         # Building stack
-    sw ra, 24(sp)
-    sw fp, 20(sp)
-    .cprestore 16           # sw gp, 16(sp)
-    move fp, sp
-    sw a1, 4(fp)
-    sw a0, 0(fp)
+step_south:	
+    subu sp, sp, 8          # Building stack
+    sw fp, 4(sp)
+    .cprestore 0            # sw gp, 0(sp)
     lw t0, 4(a0)            # ant->y
-    move a2, a1             # height
-    addu a0, a0, 4          # &ant->y
-    addu t0, t0, 1
-    move a1, t0             # ant->y+1
-    jal adjust
-    lw ra, 24(sp)           # Disarming stack
-    lw fp, 20(sp)
-    lw gp, 16(sp)
-    lw a1, 4(sp)
-    lw a0, 0(sp)
-    addu sp, sp, 32
+    addu t0, t0, 1          # ant->y+1
+    addu t1, a0, 4          # &ant->y
+    blt t0, 0, step_side_s  # Check if position is out of limit of the grid
+    div t0, a1
+    mfhi t0
+    b exit_adjust_s
+step_side_s:
+    subu t0, a1, 1          # Step to [size-1] position
+exit_adjust_s:
+    sw t0, (a0)
+    lw gp, 0(sp)            # Disarming stack
+    lw fp, 4(sp)
+    addu sp, sp, 8
     jr ra
 .end step_south
 
@@ -142,28 +130,22 @@ step_south:
 .globl step_east
 .ent step_east
 step_east:
-    .frame sp, 32, ra
-    .set noreorder
-    .cpload	t9
-    .set reorder	
-    subu sp, sp, 32         # Building stack
-    sw ra, 24(sp)
-    sw fp, 20(sp)
-    .cprestore 16           # sw gp, 16(sp)
-    move fp, sp
-    sw a1, 4(fp)
-    sw a0, 0(fp)
-    lw t0, 0(a0)            # ant->x
-    move a2, a1             # width                 
-    addu t0, t0, 1
-    move a1, t0             # ant->x+1
-    jal adjust
-    lw ra, 24(sp)           # Disarming stack
-    lw fp, 20(sp)
-    lw gp, 16(sp)
-    lw a1, 4(sp)
-    lw a0, 0(sp)
-    addu sp, sp, 32
+    subu sp, sp, 8          # Building stack
+    sw fp, 4(sp)
+    .cprestore 0            # sw gp, 0(sp)
+    lw t0, 0(a0)            # ant->x             
+    addu t0, t0, 1          # ant->x+1
+    blt t0, 0, step_side_e  # Check if position is out of limit of the grid
+    div t0, a1
+    mfhi t0
+    b exit_adjust_e
+step_side_e:
+    subu t0, a1, 1          # Step to [size-1] position
+exit_adjust_e:
+    sw t0, (a0)
+    lw gp, 0(sp)            # Disarming stack
+    lw fp, 4(sp)
+    addu sp, sp, 8
     jr ra
 .end step_east
 
@@ -171,50 +153,22 @@ step_east:
 .align 2
 .globl step_west
 .ent step_west
-step_west:
-    .frame sp, 32, ra
-    .set noreorder
-    .cpload	t9
-    .set reorder	
-    subu sp, sp, 32         # Building stack
-    sw ra, 24(sp)
-    sw fp, 20(sp)
-    .cprestore 16           # sw gp, 16(sp)
-    move fp, sp
-    sw a1, 4(fp)
-    sw a0, 0(fp)
-    lw t0, 0(a0)            # ant->x
-    move a2, a1             # width                 
-    subu t0, t0, 1
-    move a1, t0             # ant->x-1
-    jal adjust
-    lw ra, 24(sp)           # Disarming stack
-    lw fp, 20(sp)
-    lw gp, 16(sp)
-    lw a1, 4(sp)
-    lw a0, 0(sp)
-    addu sp, sp, 32
-    jr ra
-.end step_west
-
-.text
-.align 2
-.globl adjust
-.ent adjust
-adjust:
+step_west:	
     subu sp, sp, 8          # Building stack
     sw fp, 4(sp)
     .cprestore 0            # sw gp, 0(sp)
-    blt a1, 0, step_side    # Check if position is out of limit of the grid
-    div a1, a2
+    lw t0, 0(a0)            # ant->x                
+    subu t0, t0, 1          # ant->x-1
+    blt t0, 0, step_side_w  # Check if position is out of limit of the grid
+    div t0, a1
     mfhi t0
-    b exit_adjust
-step_side:
-    subu t0, a2, 1          # Step to [size-1] position
-exit_adjust:
+    b exit_adjust_w
+step_side_w:
+    subu t0, a1, 1          # Step to [size-1] position
+exit_adjust_w:
     sw t0, (a0)
     lw gp, 0(sp)            # Disarming stack
     lw fp, 4(sp)
     addu sp, sp, 8
     jr ra
-.end adjust
+.end step_west
